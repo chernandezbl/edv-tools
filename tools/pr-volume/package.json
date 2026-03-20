@@ -1,0 +1,11 @@
+{
+  "name": "@edv-tools/pr-volume",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "fetch": "bash fetch-prs.sh",
+    "fetch-details": "bash fetch-pr-details.sh",
+    "analyze": "bash analyze.sh",
+    "analyze-details": "bash analyze-details.sh"
+  }
+}
