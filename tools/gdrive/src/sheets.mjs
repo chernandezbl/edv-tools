@@ -9,7 +9,6 @@ import { google } from "googleapis";
  */
 export async function csvToSheet(auth, csv, title) {
   const sheets = google.sheets({ version: "v4", auth });
-  const drive = google.drive({ version: "v3", auth });
 
   // Parse CSV into rows
   const rows = csv

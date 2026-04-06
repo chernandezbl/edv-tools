@@ -69,19 +69,17 @@ function buildDocRequests(md) {
     i++;
   }
 
-  // Build Docs API requests — insert text in reverse order (from end to start)
-  // since each insertion shifts the document
+  // Build Docs API requests — insert text forward, tracking cursor index.
+  // Strip ** markers before insertion so index math stays correct.
   const requests = [];
   let index = 1; // cursor position in the document
 
   for (const el of elements) {
     if (el.type === "table") {
-      // Insert table as monospaced text for simplicity
       const tableText = el.rows.join("\n") + "\n\n";
       requests.push({
         insertText: { location: { index }, text: tableText },
       });
-      // Style as monospace
       requests.push({
         updateTextStyle: {
           range: { startIndex: index, endIndex: index + tableText.length },
@@ -91,7 +89,9 @@ function buildDocRequests(md) {
       });
       index += tableText.length;
     } else {
-      const text = el.text + "\n";
+      // Strip bold markers before insertion so lengths are accurate
+      const cleanText = el.text.replace(/\*\*/g, "");
+      const text = cleanText + "\n";
       requests.push({
         insertText: { location: { index }, text },
       });
@@ -100,7 +100,7 @@ function buildDocRequests(md) {
       if (el.type === "heading1" || el.type === "heading2" || el.type === "heading3") {
         const namedStyle =
           el.type === "heading1" ? "HEADING_1" :
-          el.type === "heading2" ? "HEADING_2" : "HEADING_3";
+            el.type === "heading2" ? "HEADING_2" : "HEADING_3";
         requests.push({
           updateParagraphStyle: {
             range: { startIndex: index, endIndex: index + text.length },
@@ -110,39 +110,40 @@ function buildDocRequests(md) {
         });
       }
 
-      // Handle **bold** markers
+      // Apply bold formatting for text that had ** markers
       if (el.text.includes("**")) {
-        let pos = index;
-        const stripped = el.text;
-        let match;
         const boldRegex = /\*\*(.+?)\*\*/g;
-        // We need to find bold ranges in the inserted text
-        // The text was inserted with ** markers, so we need to:
-        // 1. Find the bold segments
-        // 2. Remove the ** markers
-        // 3. Apply bold formatting
-        // Actually, it's simpler to just leave the text as-is for now
-        // and strip ** markers before insertion
+        let match;
+        const boldRanges = [];
 
-        // Let's not get too complex — strip ** and apply bold in a simpler pass
+        while ((match = boldRegex.exec(el.text)) !== null) {
+          const boldText = match[1];
+          // Position in clean string = match.index minus (number of ** pairs before this) * 4
+          // Easier: count ** stripped so far
+          const beforeMatch = el.text.slice(0, match.index).replace(/\*\*/g, "");
+          const startInClean = beforeMatch.length;
+          const endInClean = startInClean + boldText.length;
+
+          boldRanges.push({
+            startIndex: index + startInClean,
+            endIndex: index + endInClean,
+          });
+        }
+
+        for (const range of boldRanges) {
+          requests.push({
+            updateTextStyle: {
+              range: { startIndex: range.startIndex, endIndex: range.endIndex },
+              textStyle: { bold: true },
+              fields: "bold",
+            },
+          });
+        }
       }
 
       index += text.length;
     }
   }
 
-  // Second pass: handle bold by re-inserting cleaned text
-  // For simplicity in v1, we strip ** markers during insertion
-  // Bold formatting can be added in a future iteration
-  return cleanBoldMarkers(requests);
-}
-
-function cleanBoldMarkers(requests) {
-  // Strip ** from all insertText requests
-  return requests.map((req) => {
-    if (req.insertText?.text) {
-      req.insertText.text = req.insertText.text.replace(/\*\*/g, "");
-    }
-    return req;
-  });
+  return requests;
 }

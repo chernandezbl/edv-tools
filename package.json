@@ -6,12 +6,16 @@
     "tools/*"
   ],
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.2.0",
     "turbo": "^2"
   },
   "scripts": {
     "fetch": "turbo run fetch",
     "fetch-details": "turbo run fetch-details",
     "analyze": "turbo run analyze",
-    "analyze-details": "turbo run analyze-details"
+    "analyze-details": "turbo run analyze-details",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
   }
 }

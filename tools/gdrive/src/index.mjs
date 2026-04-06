@@ -17,7 +17,7 @@ const filePath = args[1];
 
 if (!command || !filePath || ["--help", "-h"].includes(command)) {
   console.log(USAGE);
-  process.exit(command ? 1 : 0);
+  process.exit(!command || ["--help", "-h"].includes(command) ? 0 : 1);
 }
 
 // Parse --title flag
