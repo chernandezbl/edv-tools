@@ -1,0 +1,2 @@
+# 'name' field is read from CSV but only login/team are used
+disable=SC2034

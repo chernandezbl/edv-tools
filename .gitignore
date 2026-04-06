@@ -1,2 +1,4 @@
 data/
 output/
+node_modules/
+.turbo/

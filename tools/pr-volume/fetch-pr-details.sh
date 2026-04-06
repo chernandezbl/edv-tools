@@ -34,7 +34,7 @@ SKIPPED=0
 ERRORS=0
 
 # Parse prs.csv: repo,pr_number,author,merged_at,title
-tail -n +2 "$PRS_CSV" | while IFS= read -r line; do
+while IFS= read -r line; do
   # CSV fields may be quoted — extract with simple parameter expansion
   repo=$(echo "$line" | awk -F',' '{gsub(/"/, "", $1); print $1}')
   pr_number=$(echo "$line" | awk -F',' '{gsub(/"/, "", $2); print $2}')
@@ -79,7 +79,7 @@ tail -n +2 "$PRS_CSV" | while IFS= read -r line; do
 
   # Rate limit: ~30 requests/min to stay safe
   sleep 2
-done
+done < <(tail -n +2 "$PRS_CSV")
 
 FINAL=$(tail -n +2 "$DETAILS_CSV" | wc -l | tr -d ' ')
 echo "Done. $FINAL PRs with details in $DETAILS_CSV ($ERRORS errors)"

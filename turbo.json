@@ -1,0 +1,20 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "fetch": {
+      "cache": false
+    },
+    "fetch-details": {
+      "dependsOn": ["fetch"],
+      "cache": false
+    },
+    "analyze": {
+      "dependsOn": ["fetch"],
+      "cache": false
+    },
+    "analyze-details": {
+      "dependsOn": ["fetch-details"],
+      "cache": false
+    }
+  }
+}
